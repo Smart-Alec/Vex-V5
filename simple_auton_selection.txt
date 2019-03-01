@@ -1,0 +1,29 @@
+#include "vex.h"
+
+vex::brain Brain;
+
+int auton_direction = 0;
+void autonomous_selection(){
+    Brain.Screen.drawRectangle(10, 10, 460, 105);
+    Brain.Screen.drawRectangle(10, 125, 460, 105);
+    if(Brain.Screen.pressing()){
+        int x = Brain.Screen.xPosition();
+        int y = Brain.Screen.yPosition();
+        if(x>=10&&x<=470){
+            if(y>=10&&y<=115){
+                auton_direction = 1;
+            }else if(y>=125&&y<=230){
+                auton_direction = 2;
+            }
+        }
+    }
+}
+void autonomous(){
+    if(auton_direction == 0){
+        //no autonomous
+    }else if(auton_direction == 1){
+        //left
+    }else if(auton_direction == 2){
+        //right
+    }
+}
