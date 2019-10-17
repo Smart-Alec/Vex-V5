@@ -1,0 +1,68 @@
+#include "vex.h"
+#include <iostream>
+#include <fstream>
+#include <cstring>
+#include <vector>
+using namespace vex;
+
+vex::brain Brain;
+vex::controller Controller;
+vex::motor left_drive = vex::motor(PORT10, true);
+vex::motor right_drive = vex::motor(PORT2, false);
+
+void arcade_drive(int axis_3, int axis_1){
+  left_drive.spin(vex::directionType::fwd, (axis_3-axis_1), vex::percentUnits::pct);
+  right_drive.spin(vex::directionType::fwd, (axis_3+axis_1), vex::percentUnits::pct);
+}
+
+void record(){
+    std::ofstream ofs ("test.txt", std::ofstream::out);
+    ofs << "1,1,1,1|";
+    ofs << "2,2,2,2|";
+    ofs << "3,3,3,3|";
+    ofs.close();
+}
+
+void read_stream(std::string filename){
+  std::string test = "-100";
+  /*std::ifstream file;
+  file.open(filename);
+  std::string temp;
+  if(file.is_open()){
+    while(!file.eof()){
+      file >> temp;
+    }
+  }
+  file.close();
+  */
+  int i;
+  sscanf(test.c_str(), "%d", &i);
+  Brain.Screen.print(i);
+  arcade_drive(0, i);
+}
+
+std::vector<int> parse_data(std::string input){
+  std::vector<int> output;
+  for(int i = 0; i < (input.length()/4); i++){
+    int temp;
+    sscanf(input.substr(i*4, 4).c_str(), "%d", &temp);
+    output.push_back(temp);
+  }
+  return output;
+}
+
+void parse_autonomous(std::vector<int> axis_data){
+  for(int i = 0; i < (axis_data.size()/2); i=i+2){
+    arcade_drive(axis_data[i], axis_data[i+1]);
+    vex::task::sleep(1000);
+  }
+}
+
+int main(){
+  std::string data = "+100+100+100+100-100-100+100+100+000+000";
+  parse_autonomous(parse_data(data));
+  while(true){
+    arcade_drive(Controller.Axis3.value(), Controller.Axis1.value());
+    vex::task::sleep(50);
+  }
+}
