@@ -1,0 +1,90 @@
+#include "vex.h"
+#include <fstream>
+using namespace vex;
+
+vex::brain Brain;
+vex::competition Competition;
+vex::controller Controller;
+vex::motor left_drive = vex::motor(vex::PORT13);
+vex::motor right_drive = vex::motor(vex::PORT11, true);
+
+int sign(char byte){
+  if((byte-0)>100){
+    return (-1*((byte-0)-127));
+  }else{
+    return (byte-0);
+  }
+}
+
+char charize(int analog){
+  if(analog > 0){
+    char ret = analog;
+    return ret;
+  }else{
+    char ret = -1*analog+127;
+    return ret;
+  }
+}
+
+void pre_auton( void ){
+
+}
+
+void autonomous( void ){
+
+}
+
+void usercontrol( void ){
+
+}
+
+void arcade_drive(int axis_3, int axis_1){
+  left_drive.spin(vex::directionType::fwd, (axis_3-axis_1), vex::percentUnits::pct);
+  right_drive.spin(vex::directionType::fwd, (axis_3+axis_1), vex::percentUnits::pct);
+}
+
+void slurp(std::string filename){
+  std::ifstream file(filename, std::ios::in | std::ios::binary); // open auton file
+  while(true){ //read each frame
+    char temp_frame[8];
+    file.read(temp_frame, 8);
+    if((temp_frame[7]-0) == 0)
+      break; //end of file
+    arcade_drive(sign(temp_frame[2]), sign(temp_frame[0]));
+    vex::task::sleep((temp_frame[7]-0));
+  }
+  file.close(); // close auton file
+}
+
+void record(std::string filename, int read_x){
+  std::ofstream file(filename, std::ios::out | std::ios::binary);
+  while(true){
+    arcade_drive(Controller.Axis3.value(), Controller.Axis1.value());
+    char temp_frame[8];
+    //char axis_1 = Controller.Axis1.value();
+    //char axis_3 = Controller.Axis3.value();
+    char read = read_x;
+    temp_frame[0] = charize(Controller.Axis1.value());
+    temp_frame[2] = charize(Controller.Axis3.value());
+    temp_frame[7] = read;
+    file.write(temp_frame, 8);
+    vex::task::sleep(read);
+    Brain.Screen.clearScreen(0xFF0);
+    if(Controller.ButtonB.pressing())
+      break;
+  }
+  Brain.Screen.clearScreen(0x0FF);
+  file.close();
+}
+
+int main(){
+    //Competition.autonomous( autonomous );
+    //Competition.drivercontrol( usercontrol );
+    //pre_auton();
+    Brain.Screen.clearScreen(0x0FF);
+    vex::task::sleep(10000);
+    record("test", 50);
+    vex::task::sleep(10000);
+    Brain.Screen.clearScreen(0xFF0);
+    slurp("test");
+}
