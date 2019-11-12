@@ -29,7 +29,14 @@ char atoc(int analog){ // analog to char
 
 int ctoa(char byte){ // char to analog
   int analog = byte;
-  return analog;
+  //bugfix?
+  if(analog > 100){
+    return (analog-256);
+  }else if(analog < 100){
+    return analog;
+  }else{
+    return 0; //uhoh
+  }
 }
 
 bool get_bit(char analog, int index){ // gets selected bit from byte
